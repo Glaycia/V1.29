@@ -25,7 +25,7 @@ def ArmDynamics(x, u):
     q = x[0:2]
     qdot = x[2:4]
 
-    # F(thetas) = B(q)@u + C(qdot, q) + g(q)
+    # F(thetas) + C(qdot, q) = M(q)@u + g(q)
     M = np.empty((2, 2)) #Mass matrix
     M[0, 0] = inertia_1 + length_1 ** 2 * (mass_1 + 2 * mass_2)
     M[0, 1] = length_1 * length_2 * mass_2 * cos(q[0, 0] - q[1, 0])
@@ -37,8 +37,8 @@ def ArmDynamics(x, u):
     C[1, 0] = -length_1 * length_2 * mass_2 * qdot[0, 0]**2 * sin(q[0, 0] - q[1, 0])
 
     G = np.empty((2, 1)) #Gravity Term
-    G[0, 0] = g * (com_1 * mass_1 * cos(q[0, 0]) + length_2 * mass_2 * cos(q[1, 0]))
-    G[1, 0] = g * (com_2 * mass_2 * cos(q[1, 0]))
+    G[0, 0] = -g * (com_1 * mass_1 * cos(q[0, 0]) + length_2 * mass_2 * cos(q[1, 0]))
+    G[1, 0] = -g * (com_2 * mass_2 * cos(q[1, 0]))
 
     #Invert Mass Matrix
     Minv = np.empty((2, 2))
@@ -52,7 +52,7 @@ def ArmDynamics(x, u):
     #Return changes in state:
     qddot = np.empty((4, 1))
     qddot[0:2] = qdot
-    qddot[2:4] = Minv @ (u - C - G)
+    qddot[2:4] = Minv @ (u - C + G)
     return qddot
 
 def linearizeSystem(x, u):
